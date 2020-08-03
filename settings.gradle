@@ -1,0 +1,2 @@
+rootProject.name = 'pump-samples'
+include 'kotest-allure-sample'
