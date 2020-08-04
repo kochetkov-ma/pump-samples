@@ -43,5 +43,6 @@ allure {
     version = allureVersion
     autoconfigure = false
     aspectjweaver = true
+    aspectjVersion = aspectJVersion
     resultsDir = file "$buildDir/allure-results"
 }
