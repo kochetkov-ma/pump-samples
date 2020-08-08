@@ -4,6 +4,12 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import org.springframework.test.context.ContextConfiguration
 
+/**
+ * Test with [FreeSpec] in free style.
+ * Context is configuring by [ContextConfiguration]
+ * [Free-spec](https://github.com/kotest/kotest/blob/master/doc/styles.md#free-spec)
+ * [Spring](https://github.com/kotest/kotest/blob/master/doc/extensions.md#Spring)
+ */
 @ContextConfiguration(classes = [AllureStep::class])
 open class ReportingFreeSpec(step: AllureStep) : FreeSpec() {
 
