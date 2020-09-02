@@ -1,0 +1,31 @@
+/**
+ * Idea plugin and others
+ */
+plugins {
+    // Integration with idea project settings
+    id 'idea'
+    // Very useful plugin. It checks all deps and plugins versions and show the latest if it exist. Task -> 'dependencyUpdates' ('help' group)
+    id 'com.github.ben-manes.versions' version "$benManesPluginVersion"
+}
+
+/**
+ * Apply local gradle scripts from './gradle'.
+ * It contains extra tasks and configs.
+ * Just for code readability locates in separate file.
+ */
+apply from: "$gradleDir/util.gradle"
+
+/**
+ * Local and Central repos
+ */
+allprojects { repositories { mavenLocal(); mavenCentral() } }
+
+/**
+ * Idea plugin settings
+ */
+idea { module { downloadJavadoc = true; downloadSources = false } }
+
+/**
+ * Define gradle wrapper
+ */
+wrapper { distributionType = Wrapper.DistributionType.ALL; gradleVersion = gradleWrapperVersion }

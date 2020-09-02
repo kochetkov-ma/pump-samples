@@ -1,0 +1,25 @@
+/**
+ * Create new module folder with files from 'gradle/init' and all 'sourceSets'
+ */
+task prepareProjects {
+    group 'build setup'
+    doFirst {
+        subprojects.each { project ->
+            println "$project initialization ..."
+            ['build.gradle': '',
+             'readme.md'   : ''].each { e ->
+                def dest = "$project.projectDir/$e.value"
+                if (!file("$dest/$e.key").exists()) {
+                    println "copy from '$gradleInitDir/$e.key' to '$project.projectDir/$e.value'"
+                    copy {
+                        from "$gradleInitDir/$e.key"
+                        into "$project.projectDir/$e.value"
+                    }
+                }
+            }
+            project.findProperty('sourceSets')?.each { set ->
+                set.allSource.srcDirs.each { mkdir it }
+            }
+        }
+    }
+}
