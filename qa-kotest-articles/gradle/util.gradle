@@ -10,9 +10,9 @@ task prepareProjects {
              'readme.md'   : ''].each { e ->
                 def dest = "$project.projectDir/$e.value"
                 if (!file("$dest/$e.key").exists()) {
-                    println "copy from '$gradleInitDir/$e.key' to '$project.projectDir/$e.value'"
+                    println "copy from '$rootDir/gradle/init/$e.key' to '$project.projectDir/$e.value'"
                     copy {
-                        from "$gradleInitDir/$e.key"
+                        from "$rootDir/gradle/init/$e.key"
                         into "$project.projectDir/$e.value"
                     }
                 }

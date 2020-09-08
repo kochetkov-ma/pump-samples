@@ -9,12 +9,14 @@ import org.springframework.stereotype.Component
 @Component
 class AllureStep {
 
+    operator fun String.minus(par: String) = this + par
+
     /**
      * Step method with allure annotation.
      */
     @Step("Deploy stand {name}")
     fun deployStand(name: String) {
-
+        ""
     }
 
     /**

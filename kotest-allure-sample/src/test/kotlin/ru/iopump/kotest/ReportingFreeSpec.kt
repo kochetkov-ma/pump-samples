@@ -14,6 +14,9 @@ import org.springframework.test.context.ContextConfiguration
 open class ReportingFreeSpec(step: AllureStep) : FreeSpec() {
 
     init {
+        beforeTest {
+
+        }
         "Container test" - {
             "Given the system prepared" {
                 step.deployStand("http://allure.iopump.ru")
