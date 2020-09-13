@@ -17,30 +17,32 @@ open class KotestFirstAutomatedTesting : FreeSpec() {
     }
 
     init {
-
         "Scenario. Single case" - {
 
             //region Variables
             val expectedCode = 200
-            val server = Server()
-            val client = Client()
+            val testEnvironment = Server()
+            val tester = Client()
             //endregion
 
             "Given server is up" {
-                server.start()
+                testEnvironment.start()
             }
 
             "When request prepared and sent" {
                 val request = Request()
-                client.send(request)
+                tester.send(request)
             }
 
-            "Then response received and has $expectedCode code" {
-                val response = client.receive()
+            lateinit var response: Response
+            "Then response received" {
+                response = tester.receive()
+            }
 
+            "And has $expectedCode code" {
                 assertSoftly {
                     response.asClue {
-                        it.code shouldBe 200
+                        it.code shouldBe expectedCode
                         it.body.shouldNotBeBlank()
                     }
                 }
@@ -48,7 +50,7 @@ open class KotestFirstAutomatedTesting : FreeSpec() {
                 val assertion = assertThrows<AssertionError> {
                     assertSoftly {
                         response.asClue {
-                            it.code shouldBe 100
+                            it.code shouldBe expectedCode + 10
                             it.body.shouldBeBlank()
                         }
                     }

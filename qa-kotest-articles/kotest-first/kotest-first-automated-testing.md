@@ -4,10 +4,10 @@ Kotlin. Автоматизация тестирования (часть 1). Kote
 TODO:: Сюда картина Kotest
 
 Более 5 лет занимаясь автоматизацией тестирования на Java я перепробовал множество подходов и технологий.
-Начиналось все с 'голого' Junit + Selenium + RestAssured, далее вместо Junit пробовал TestNG, потом в стеке появились отчеты Allure.
-Были и проекты, где использовались платные версии HP Unified Functional Testing, HP LeanFT, IBM Rational Functional. На замену Selenium пришел Selenoid, а для тестирования микро-сервисов TestContainers.
-Помню удачный опыт использования очень интересного Фреймворка - Groovy Spock. 
-Основная цель поисков и изучения новых технологий — это в идеале найти, но как правило найти и доработать под себя один Фреймворк или несколько отдельных технологий и все это объединить в единый подход, который обеспечит:
+Начиналось все с 'голого' Junit + Selenium + RestAssured, вместо Junit пробовал TestNG, потом в стеке появились отчеты Allure.
+Были и проекты, где использовались платные версии HP Unified Functional Testing, HP LeanFT, IBM Rational Functional. 
+На замену Selenium пришел Selenoid, а для тестирования микро-сервисов TestContainers. Пробовал и Groovy Spock. 
+Основная цель поисков — найти и доработать под себя один Фреймворк или несколько отдельных технологий и объединить в единый подход, который обеспечит:
 - быстрый старт для нового QA
 - хорошую документацию
 - минимальную дублируемость кода
@@ -67,34 +67,179 @@ TODO:: Сюда картина Kotest
 - определить действия на уровне всего прогона (фича, которой нет явно в junit)
 - использовать встроенный крайне удобные assertions
 - удобное конфигурирование тестовых классов и тестового проекта из кода
-и много чего еще, см. [полную документацию в Github](https://github.com/kotest/kotest/blob/master/doc/reference.md) 
+и много чего еще, см. [полную документацию](https://kotest.io/) и [сам проект в GitHub](https://github.com/kotest/kotest)  
 
 Какой стиль выбрать? 
 ------
 Kotest дает возможность выбора между несколькими вариантами DSL для формирования структуры тестов.
-Самый базовый и простой [String Spec](https://github.com/kotest/kotest/blob/master/doc/styles.md#string-spec) - идеально подойдет для написания юнит-тестов с одним уровнем вложенности шагов.
+Самый базовый и простой [String Spec](https://kotest.io/styles/#string-spec) - идеально подойдет для написания unit-тестов с одним уровнем вложенности шагов.
 Но нам нужно, что-то посложнее. 
 Не буду долго рассуждать. 
-Сразу скажу, что после долгих экспериментов я остановился на стиле [FreeSpec](https://github.com/kotest/kotest/blob/master/doc/styles.md#free-spec).
+Сразу скажу, что после долгих экспериментов я остановился на стиле [FreeSpec](https://kotest.io/styles/#free-spec).
 
 #### Начинаем создавать тест
-Вот пример теста без реализации:
-```kotlin
+Используя `Kotest` я рекомендую продолжать писать тесты в BDD стиле, как в Cucumber. 
+FreeStyle не накладывает ограничений на именование тестов, ключевые слова и вложенность, поэтому есть вещи нужно контролировать на уровне гайдов, обучения и Merge-Request`ов.
 
+##### Иерархия тестовых сущностей
+В нашем подходе будет 5 базовых тестовых сущностей (или уровней) в рамках Kotest. 
+Важно определить это сейчас, потому что в дальнейшем оперировать я буду этими уровнями, от которых зависят различные области видимости.
+1. Тестовый прогон - Execution
+Запуск определенного набора тестов
+
+2. Спецификация - Spec
+Тестовый класс. В cucumber - это Feature
+
+3. Контейнер теста - Top Level Test
+Сценарий верхнего уровня в Спецификации. В cucumber - это Scenario
+
+4. Шаг теста - Nested Test
+Шаг в сценарии, который начинается с ключевого слова. 
+Ключевое слово обозначает этап: подготовка (Дано), воздействие (Когда), проверка ожидаемой реакции (Тогда).
+В cucumber - это Step
+
+5. Вложенные Шаги - Nested Step
+Это любая дополнительная информация о произведенных действиях, например аннотация allure `@Step`. 
+В рамках описания сценария эти шаги не несут нагрузки — они нужны для отчета, для отладки, для выяснения причин ошибки. 
+Kotest позволяет создавать любую вложенность, но в данном подходе мы ограничиваемся `4 - Шаг теста - Nested Test` - дальнейшая вложенность воспринимается как шаги для отчета. 
+
+С точки зрения Форматирования теста и Review интерес представляют уровни **1** - **4**.
+
+В Cucumber есть сущность Структура Сценария (Scenario Template) - это реализация Data Driven. 
+В Kotest уровень `3. Контейнер теста - Top Level Test`, также может являться Структурой Сценария — то есть помножиться на наборы тестовых данных.    
+
+##### Превращаем требования в сценарий
+Допустим мы тестируем REST API сервиса и имеются требования. 
+Не известно, как мы будем отправлять запросы, как получать, десериализовывать и проверять, но сейчас это не нужно. 
+
+Пишем шаблон реализации:
+```kotlin
+open class KotestFirstAutomatedTesting : FreeSpec() {
+
+    private companion object {
+        private val log = LoggerFactory.getLogger(KotestFirstAutomatedTesting::class.java)
+    }
+    
+    init {
+        "Scenario. Single case" - {
+            val expectedCode = 200
+
+            "Given server is up" { }
+
+            "When request prepared and sent" { }
+
+            "Then response received and has $expectedCode code" { }
+        }
+    }
+}
 ```
 _Очень похоже на Сценарии в Cucumber_
 Во первых стоит обратить внимание, что здесь нет понятия `тестовый класс`, а есть `спецификация` (`FreeSpec`). И это не спроста.
 Вспоминаем, что Kotlin DSL - это type-safe builder, а значит при запуске наши тесты сначала формируют дерево тестов / тестовых контейнеров / pre и after функций / вложенных шагов умноженных на наборы тестовых данных.
-Поэтому в дальнейшем будем называть тестовый класс **Спецификацией** (`Spec`) - это не новый подход, например фреймворк Groovy Spock работает похожим образом. 
+Отмечу использование интерполяции строк в имени шага `"Then response received and has $expectedCode code"`
 
-#### Поясню кратко принцип работы:
+##### Принцип работы DSL
+1. Контейнер теста.
+> _**Используется минус после названия** Важно его не пропускать
+
+Наш тест наследуется от класса `FreeSpec`, в свою очередь он реализует `FreeSpecRootScope`: 
+```kotlin 
+abstract class FreeSpec(body: FreeSpec.() -> Unit = {}) : DslDrivenSpec(), FreeSpecRootScope
+```
+
+В `FreeSpecRootScope` для класса `String` переопределяется оператор `-`:
+```kotlin
+infix operator fun String.minus(test: suspend FreeScope.() -> Unit) { }
+```
+Соответсвенно запись `"string" - { }` вызывает этот метод, передает внутрь функциональный тип с контекстом `FreeScope` и добавляет в дерево тестов Тест контейнер.
+
+2. Шаги теста
+В том же интерфейсе `FreeSpecRootScope` для класса `String` переопределяется оператор вызова `invoke`
+```kotlin
+infix operator fun String.invoke(test: suspend TestContext.() -> Unit) { }
+```
+Запись `"string" { }` является вызовом функции расширения с аргументом функционального типа с контекстом `TestContext`, а так как для лямбд круглые скобки можно опускать, то получается такая конструкция.
 В базовом классе `FreeSpec` имеется переопределенный `infix` оператор 'минус' в виде функции расширения для String.
-То есть запись `"test" - { }` вызывает функцию расширения `String.minus(test: suspend FreeScope.() -> Unit)` куда в качестве единственного аргумента передается лямбда нашего теста
-Далее следуют вложенные шаги теста, написанные в BDD стиле. 
-`"Given " { }` вызывает `infix` функцию расширения `String.invoke(test: suspend TestContext.() -> Unit)` и т.д.
-Все вызовы `beforeSpec` / `afterSpec` / `beforeTest` / `afterTest` - это функции с одним аргументом функционального типа: `fun beforeTest(f: BeforeTest)` с алисом типа `typealias BeforeTest = suspend (TestCase) -> Unit`
+То есть запись `"test" - { }` вызывает функцию расширения `String.minus(test: suspend FreeScope.() -> Unit)` куда в качестве единственного аргумента передается лямбда нашего теста.
+
+##### Реализация теста и проверок
+```
+init {
+        "Scenario. Single case" - {
+
+            //region Variables
+            val expectedCode = 200
+            val testEnvironment = Server()
+            val tester = Client()
+            //endregion
+
+            "Given server is up" {
+                testEnvironment.start()
+            }
+
+            "When request prepared and sent" {
+                val request = Request()
+                tester.send(request)
+            }
+            
+            lateinit var response: Response
+            "Then response received" {
+                response = tester.receive()
+            }
+
+            "And has $expectedCode code" {
+                response.code shouldBe expectedCode
+            }
+        }
+    }
+```
+Поясню некоторые момент и мотивацию
+1. Константы для конкретного сценария определены прямо в блоке и окружены конструкцией Idea для сворачивания
+2. Для обмена информацией между шагами приходится использовать переменные типа `lateinit var response: Response`, определенные непосредственно перед блоком, в котором они инициализируются
+
+#### Kotest Assertions и Matchers
+Зависимость `testImplementation "io.kotest:kotest-assertions-core:$kotestVersion"` добавит все необходимое для реализации всех необходимых проверок в тестах.
+Также есть возможность расширять ее и добавлять свои комплексные Matcher-ы, а также использовать уже готовые расширения.
+См. документацию [**kotest-assertions**](https://kotest.io/assertions/) и список доступных [проверок из коробки](https://kotest.io/matchers/core/)  
+
+```kotlin
+"And has $expectedCode code" {
+    assertSoftly {
+        response.asClue {
+            it.code shouldBe expectedCode
+            it.body.shouldNotBeBlank()
+        }
+    }
+    val assertion = assertThrows<AssertionError> {
+        assertSoftly {
+            response.asClue {
+                it.code shouldBe expectedCode + 10
+                it.body.shouldBeBlank()
+            }
+        }
+    }
+    assertion.message shouldContain "The following 2 assertions failed"
+    log.error("Expected assertion", assertion)
+}
+```
+
+1. **`assertSoftly { code }`**
+Soft Assert из библиотеки assertions `Kotest` - выполнит блок кода полностью и сформирует сообщение со всеми ошибками.
+2. **`response.asClue { }`** 
+_MUST HAVE_ для проверок в тестах. Scope функция kotlin `asClue` - при возникновении ошибки добавит в сообщение строковое представление **всего** объекта `response`
+3. Matcher-ы
+Matchers от `Kotest` - отличная расширяемая библиотека проверок, полностью покрывает базовые потребности.
+`shouldBe` - infix версия проверки на равенство.
+`shouldBeBlank` - не infix (т.к. нет аргумента) проверка на пустоту строки. [Ссылка на полный список](https://kotest.io/matchers/core/)  
+4. `assertThrows<AssertionError>` - статическая функция расширенной для Котлина библиотеки Junit5
+```kotlin
+inline fun <reified T : Throwable> assertThrows(noinline executable: () -> Unit)
+```
+Выполняет блок, проверяет тип ожидаемого Исключения и возвращает его для дальнейших проверок
 
 #### Добавляем pre / after функции
+
+Все вызовы `beforeSpec` / `afterSpec` / `beforeTest` / `afterTest` - это функции с одним аргументом функционального типа: `fun beforeTest(f: BeforeTest)` с алисом типа `typealias BeforeTest = suspend (TestCase) -> Unit`
 
 #### Делаем тест Data Driven
 
@@ -105,8 +250,12 @@ _Очень похоже на Сценарии в Cucumber_
 _Выглядит довольно просто, а главное понятно_
 
 
-
-#### Теперь используем встроенные assertions
-
 #### Выводы после первого знакомства
 
+#### Планы
+В планах написание следующих частей, которые покроют тему 'Kotlin. Автоматизация тестирования', темы:
+- Kotest. Расширения, конфигурирование проекта, спецификации и тестов, тэги и фабрики тестов
+- Spring Test. Интеграция с Kotest. Конфигурирование тестового контекста и контроль жизненного цикла бинов.
+- Ожидания Awaitility. Retrofit для тестирования API. Работа c БД через Spring Data Jpa. 
+- Gradle. Масштабируемая и распределенная структура множества проектов авто-тестов.
+- Управление окружением. TestContainers, gradle compose plugin, kubernetes java api + helm
