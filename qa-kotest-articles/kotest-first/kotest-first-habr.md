@@ -185,7 +185,7 @@ init {
 
 Kotest Assertions и Matchers
 ------
-В **Kotest** уже есть довольно обширная библиотека `Assertions and Matchers`.
+В Kotest уже есть довольно обширная библиотека `Assertions and Matchers`.
 
 Зависимость `testImplementation "io.kotest:kotest-assertions-core:$kotestVersion"` предоставляет набор [Matcher-ов](https://kotest.io/matchers/core/), [SoftAssertion](https://kotest.io/assertions/#soft-assertions) и [Assertion для проверки Исключений](https://kotest.io/assertions/#exceptions).  
 Есть возможность расширять ее и добавлять свои комплексные Matcher-ы, а также использовать уже готовые расширения.  
@@ -266,7 +266,8 @@ typealias AroundSpecFn = suspend (Tuple2<KClass<out Spec>, suspend () -> Unit>) 
 - вызвать метод экземпляра спецификации или проекта — наиболее удобный способ, который будем рассматривать
 
 ### Обратные вызовы уровня спецификации
-Самый простой способ добавить **callback** для одного из типов доступных событий — это вызвать одноименный метод из `FreeSpec`, каждый из которых принимает функциональный тип соответствующего события:
+Самый простой способ добавить _callback_ для одного из типов доступных событий — это вызвать одноименный метод из `FreeSpec`, каждый из которых принимает функциональный тип соответствующего события:
+<spoiler title="Все варианты обратных вызовов">
 ```kotlin
  init {
         ///// ALL IN INVOCATION ORDER /////
@@ -313,6 +314,7 @@ typealias AroundSpecFn = suspend (Tuple2<KClass<out Spec>, suspend () -> Unit>) 
         "Scenario" - { }
 }
 ```
+</spoiler>
 В коде выше все обратные вызовы определены в порядке выполнения до и после теста.
 ##### before
 1. `beforeSpec`
@@ -357,7 +359,7 @@ typealias AroundSpecFn = suspend (Tuple2<KClass<out Spec>, suspend () -> Unit>) 
 Имеет аргумент пару — класс спецификации `KClass<out Spec>` + отображение всех тестов и результатов `Map<TestCase, TestResult>`
 
 ### Обратные вызовы уровня проекта
-**Kotest** предоставляет возможность определить **callback** на события всего запуска тестов.
+Kotest предоставляет возможность определить _callback_ на события всего запуска тестов.
 Их два:
 1. `beforeAll`
 Выполняется перед первым тестом в запуске
@@ -390,10 +392,8 @@ object ProjectConfig : AbstractProjectConfig() {
 init {
         "Scenario. Single case" - {
 
-            //region Variables
             val testEnvironment = Server()
             val tester = Client()
-            //endregion
 
             "Given server is up. Will execute only one time" {
                 testEnvironment.start()
