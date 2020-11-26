@@ -14,6 +14,7 @@ This is a multi-module gradle project `Java/Kotlin/Groovy`
 - [qa-pump](https://github.com/kochetkov-ma/qa-pump)
 - [pump-fw](https://github.com/kochetkov-ma/pump-fw)
 - [jdbi-crud](https://github.com/kochetkov-ma/jdbi-crud)
+- [koproc](https://github.com/kochetkov-ma/koproc)
 
 ### Tips for using test and development tools
 

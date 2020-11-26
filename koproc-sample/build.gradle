@@ -1,0 +1,23 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version "$kotlinVersion"
+}
+test { useJUnitPlatform() }
+dependencies {
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
+
+    /** Kotest */
+    testImplementation "io.kotest:kotest-runner-junit5:$kotestVersion" // for kotest framework
+    testImplementation "io.kotest:kotest-assertions-core:$kotestVersion" // for kotest core jvm assertions
+    testImplementation "io.kotest:kotest-property:$kotestVersion" // for kotest property test
+
+    /** Koproc */
+    testImplementation "ru.iopump.koproc:koproc:1.1.1"
+
+    /** Logger implementation */
+    runtimeOnly 'ch.qos.logback:logback-classic:1.2.3'
+}
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+    kotlinOptions.jvmTarget = JavaVersion.VERSION_11
+}

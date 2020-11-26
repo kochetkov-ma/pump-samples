@@ -1,3 +1,4 @@
 rootProject.name = 'pump-samples'
 include 'kotest-allure-sample'
 include 'docker-sample'
+include 'koproc-sample'
