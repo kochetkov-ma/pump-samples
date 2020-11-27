@@ -15,13 +15,13 @@ This is a multi-module gradle project `Java/Kotlin/Groovy`
 - [pump-fw](https://github.com/kochetkov-ma/pump-fw)
 - [jdbi-crud](https://github.com/kochetkov-ma/jdbi-crud)
 - [koproc](https://github.com/kochetkov-ma/koproc)
+- coroutines-sample by [coroutines-overview](https://kotlinlang.org/docs/reference/coroutines-overview.html)
 
 ### Tips for using test and development tools
 
 ### Other short code snippets
 
 ### Experiments with Github Actions 
-
 
 ## Content
 
