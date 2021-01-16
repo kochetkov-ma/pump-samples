@@ -1,3 +1,4 @@
 rootProject.name = 'qa-kotest-articles'
 
-include ':kotest-first'
+include 'kotest-first'
+include 'kotest-second'

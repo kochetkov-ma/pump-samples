@@ -33,3 +33,4 @@ gradlew.bat
 
 .allure/
 **/allure-results/
+.kotest/

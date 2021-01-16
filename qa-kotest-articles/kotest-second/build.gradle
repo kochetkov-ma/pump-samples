@@ -1,0 +1,43 @@
+
+task gradleBuildInFilterTest(type: Test) {
+    group "test"
+    useJUnitPlatform()
+    systemProperties = System.properties
+    filter {includeTestsMatching("ru.iopump.qa.sample.tag.*") }
+}
+
+task regressOnlyTest(type: Test) {
+    group "test"
+    useJUnitPlatform()
+    systemProperties = System.properties + ["kotest.tags": "regress"]
+}
+
+task linuxWithRegressOnlyTest(type: Test) {
+    group "test"
+    useJUnitPlatform()
+    systemProperties = System.properties + ["kotest.tags": "Linux & regress"]
+}
+
+task linuxAllTest(type: Test) {
+    group "test"
+    useJUnitPlatform()
+    systemProperties = System.properties + ["kotest.tags": "Linux"]
+}
+
+task noTest(type: Test) {
+    group "test"
+    useJUnitPlatform()
+    systemProperties = System.properties + ["kotest.tags": "!Linux & !Windows"]
+}
+
+task linuxAndWindowsTest(type: Test) {
+    group "test"
+    useJUnitPlatform()
+    systemProperties = System.properties + ["kotest.tags": "Linux | Windows"]
+}
+// ORDER //
+task specOrderingTest(type: Test) {
+    group "test"
+    useJUnitPlatform()
+    filter {includeTestsMatching("ru.iopump.qa.sample.ordering.*") }
+}
