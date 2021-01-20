@@ -1,43 +1,52 @@
-
+// TAG //
 task gradleBuildInFilterTest(type: Test) {
     group "test"
     useJUnitPlatform()
-    systemProperties = System.properties
-    filter {includeTestsMatching("ru.iopump.qa.sample.tag.*") }
+    doFirst { systemProperties = System.properties }
+    filter { includeTestsMatching("ru.iopump.qa.sample.tag.*") }
 }
 
 task regressOnlyTest(type: Test) {
     group "test"
     useJUnitPlatform()
-    systemProperties = System.properties + ["kotest.tags": "regress"]
+    doFirst { systemProperties = System.properties + ["kotest.tags": "regress"] }
 }
 
 task linuxWithRegressOnlyTest(type: Test) {
     group "test"
     useJUnitPlatform()
-    systemProperties = System.properties + ["kotest.tags": "Linux & regress"]
+    doFirst { systemProperties = System.properties + ["kotest.tags": "Linux & regress"] }
 }
 
 task linuxAllTest(type: Test) {
     group "test"
     useJUnitPlatform()
-    systemProperties = System.properties + ["kotest.tags": "Linux"]
+    doFirst { systemProperties = System.properties + ["kotest.tags": "Linux"] }
 }
 
 task noTest(type: Test) {
     group "test"
     useJUnitPlatform()
-    systemProperties = System.properties + ["kotest.tags": "!Linux & !Windows"]
+    doFirst { systemProperties = System.properties + ["kotest.tags": "!Linux & !Windows"] }
 }
 
 task linuxAndWindowsTest(type: Test) {
     group "test"
     useJUnitPlatform()
-    systemProperties = System.properties + ["kotest.tags": "Linux | Windows"]
+    doFirst { systemProperties = System.properties + ["kotest.tags": "Linux | Windows"] }
 }
-// ORDER //
+
+// ORDERING //
 task specOrderingTest(type: Test) {
     group "test"
     useJUnitPlatform()
-    filter {includeTestsMatching("ru.iopump.qa.sample.ordering.*") }
+    filter { includeTestsMatching("ru.iopump.qa.sample.ordering.*") }
+}
+
+// PARALLELISM //
+task parallelismTest(type: Test) {
+    group "test"
+    useJUnitPlatform()
+    doFirst { systemProperties = System.properties + ["kotest.framework.parallelism": 3] }
+    filter { includeTestsMatching("ru.iopump.qa.sample.parallelism.*") }
 }

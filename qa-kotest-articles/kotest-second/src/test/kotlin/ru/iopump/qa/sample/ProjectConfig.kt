@@ -2,11 +2,15 @@ package ru.iopump.qa.sample
 
 import io.kotest.core.config.AbstractProjectConfig
 import io.kotest.core.spec.SpecExecutionOrder
+import io.kotest.core.test.TestCaseOrder
 import org.slf4j.LoggerFactory
 
 object ProjectConfig : AbstractProjectConfig() {
     private val log = LoggerFactory.getLogger(ProjectConfig::class.java)
-    override val specExecutionOrder = SpecExecutionOrder.Annotated
+
+    override val specExecutionOrder: SpecExecutionOrder = SpecExecutionOrder.Annotated
+    override val testCaseOrder: TestCaseOrder = TestCaseOrder.Random
+    override val parallelism: Int = 1
 
     /**
      * Save execution results to file for [SpecExecutionOrder.FailureFirst] strategy.
