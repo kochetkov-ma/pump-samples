@@ -572,15 +572,206 @@ object ProjectConfig : AbstractProjectConfig() {
 }
 ```
 
-### Fluky блоки
+### Встроенные ожидания
 
-### Расширенные Matcher-ы для списков
+Во время тестов система реагирует на наши действия не мгновенно, особенно в E2E. Поэтому для **всех** проверок результат взаимодействия
+необходимо использовать ожидание. Приведу неполный список основных:
+
+- ожидание HTTP ответа (уже есть на уровне HTTP клиента, достаточно только указать таймаут)
+- ожидание появления запроса на заглушке
+- ожидание появления/изменения записи в БД
+- ожидание сообщения в очереди
+- ожидание реакции UI (для Web реализовано в Selenide)
+- ожидание письма на SMTP сервере
+
+> Если не понятно, почему нужно ждать в заглушке или в БД, - отвечу в комментариях или сделаю отдельную публикацию
+
+Есть отличная утилита для свех-тонкой настройки ожиданий: [awaitility](https://github.com/awaitility/awaitility) - о ней пойдет речь в
+будущих частях. Но **Kotest** из коробки предоставляет простой функционал ожиданий. В документации движка этот раздел
+называется `Non-deterministic Testing`.
+
+#### Eventually
+
+Подождать пока блок кода пройдет без Исключений, то есть успешно, в случае неуспеха повторять блок еще раз.  
+Функция из
+пакета `io.kotest.assertions.timing`: `suspend fun <T, E : Throwable> eventually(duration: Duration, poll: Duration, exceptionClass: KClass<E>, f: suspend () -> T): T`
+
+`f` - это блок кода, который может выбросить Исключение и этот метод будет его перезапускать, пока не выполнит успешно либо не пройдет
+таймаут `duration`.  
+`poll` - это промежуток бездействия между попытками выполнения  
+`exceptionClass` - класс исключения по которому нужно попытаться еще раз. Если вы знаете, что если блок кода
+выбросил `IllegalStateException`, то можно пробовать еще раз, но если, выбросил что-то другое, то успешно точно уже никогда не выполниться и
+даже пытаться не стоит. Тогда указываем в этом параметры именно `IllegalStateException::class`.
+
+#### Continually
+
+Выполнять переданный блок в цикле, пока не закончится выделенное время либо пока код не выбросит Исключение.  
+Функция из пакета `io.kotest.assertions.timing`: `suspend fun <T> continually(duration: Duration, poll: Duration, f: suspend () -> T): T?`
+
+`f` - это блок кода, который будет запускаться в цикле пока не пройдет таймаут `duration` либо не будет выброшено Исключение.
+`poll` - это промежуток бездействия между попытками выполнения
+
+#### Рассмотрим пример из четырех тестов (2 eventually + 2 continually)
+
+```kotlin
+@ExperimentalTime
+class WaitSpec : FreeSpec() {
+    private companion object {
+        private val log = LoggerFactory.getLogger(WaitSpec::class.java)
+    }
+
+    /*1*/
+    private lateinit var tries: Iterator<Boolean>
+    private lateinit var counter: AtomicInteger
+    private val num: Int get() = counter.incrementAndGet()
+
+    init {
+        /*2*/
+        beforeTest {
+            tries = listOf(false, false, true).iterator()
+            counter = AtomicInteger()
+        }
+
+        "eventually waiting should be success" {
+            /*3*/eventually(200.milliseconds, 50.milliseconds, IllegalStateException::class) {
+            log.info("Try $num")
+            if (tries.next().not()) /*4*/ throw IllegalStateException("Try $counter")
+        }
+        }
+
+        "eventually waiting should be failed on second try" {
+            /*5*/shouldThrow<AssertionError> {
+            eventually(/*6*/100.milliseconds, 50.milliseconds, IllegalStateException::class) {
+                log.info("Try $num")
+                if (tries.next().not()) throw IllegalStateException("Try $counter")
+            }
+        }.toString().also(log::error)
+        }
+
+        "continually waiting should be success" - {
+            /*7*/continually(200.milliseconds, 50.milliseconds) {
+            log.info("Try #$num")
+        }
+        }
+
+        "continually waiting should be failed on third try" {
+            /*8*/shouldThrow<IllegalStateException> {
+            continually(200.milliseconds, 50.milliseconds) {
+                log.info("Try #$num")
+                if (tries.next()) throw IllegalStateException("Try $counter")
+            }
+        }.toString().also(log::error)
+        }
+    }
+}
+
+```
+
+**1** Блок с полями для подсчета попыток и описания итератора из 3-ех элементов
+
+**2** Перед каждым тестовым контейнером сбрасывать счетчики
+
+**3** Вызывается функция `eventually`, который закончится успешно. Общий таймаут 200 мс, перерыв между попытками 50 мс, игнорировать
+исключение `IllegalStateException`
+
+**4** Первые две итерации выбрасывают `IllegalStateException`, а 3-я завершается успешно.
+
+**5** Тут ожидается, что `eventually` закончится неуспешно и выполняется проверка выброшенного исключения. При неудаче `eventually`
+выбрасывает `AssertionError` с информацией о причине неудачи и настройках.
+
+**6** таймаута 100 мс и перерыв между попытками 50 мс, позволяют выполнить только 2 неудачный попытки, в итоге ожидание завершается
+неуспешно
+
+**7** `continually` выполнит 4 попытки, все из которых будут успешные и само ожидание завершится успехом
+
+**8** Тут ожидается, что `continually` закончится неуспешно и выполняется проверка выброшенного исключения. При неудаче `continually`
+перебрасывает последнее Исключение от кода внутри, то есть `IllegalStateException`, чем отличается от `eventually`
+
+Лог выполнения с пояснениями:
+
+```
+/////////////////////////////////////////////////////////////////// 1 ////////////////////////////////////////////////////////////////////////
+21:12:14:796 INFO CustomKotestExtension - [BEFORE] test eventually waiting should be success
+21:12:14:812 INFO WaitSpec - Try #1
+21:12:14:875 INFO WaitSpec - Try #2
+21:12:14:940 INFO WaitSpec - Try #3
+/////////////////////////////////////////////////////////////////// 2 ////////////////////////////////////////////////////////////////////////
+21:12:14:940 INFO CustomKotestExtension - [BEFORE] test eventually waiting should be failed on second try
+21:12:14:956 INFO WaitSpec - Try #1
+21:12:15:018 INFO WaitSpec - Try #2
+
+/* Сообщение в ошибке содержит информацию о настройках ожидания */
+21:12:15:081 ERROR WaitSpec - java.lang.AssertionError: Eventually block failed after 100ms; attempted 2 time(s); 50.0ms delay between attempts
+
+/* Сообщение в ошибке содержит первое выброшенное кодом Исключение и последнее */ 
+The first error was caused by: Try #1
+java.lang.IllegalStateException: Try #1
+The last error was caused by: Try #2
+java.lang.IllegalStateException: Try #2
+//////////////////////////////////////////////////////////////////// 3 ///////////////////////////////////////////////////////////////////////
+21:12:15:081 INFO CustomKotestExtension - [BEFORE] test continually waiting should be success
+21:12:15:081 INFO WaitSpec - Try #1
+21:12:15:159 INFO WaitSpec - Try #2
+21:12:15:221 INFO WaitSpec - Try #3
+21:12:15:284 INFO WaitSpec - Try #4
+///////////////////////////////////////////////////////////////////// 4 //////////////////////////////////////////////////////////////////////
+21:12:15:346 INFO CustomKotestExtension - [BEFORE] test continually waiting should be failed on third try
+21:12:15:346 INFO WaitSpec - Try #1
+21:12:15:409 INFO WaitSpec - Try #2
+21:12:15:469 INFO WaitSpec - Try #3
+
+/* Здесь выбрасывается Исключение из выполняемого блока в continually */
+21:12:15:469 ERROR WaitSpec - java.lang.IllegalStateException: Try #3
+```
+
+### Flaky тесты
+
+Flaky тесты — это нестабильные тесты, которые могут случайным образом проходить неудачно.  
+Причин этому крайне много и разбирать мы их конечно же не будем в рамках этой статьи, обсудим варианты перезапуска подобных тестов.  
+Можно выделить несколько уровней для перезапуска:
+
+- на уровне CI перезапускать всю Задачу прогона тестов, если она неуспешна
+- на уровне Gradle сборки, используя плагин [`test-retry-gradle-plugin`](https://github.com/gradle/test-retry-gradle-plugin) или аналог
+- на уровне Gradle сборки, с помощью своей реализации, например сохранять упавшие тесты и запускать их в другой задаче
+
+> Другие инструменты для сборки Java/Kotlin/Groovy кроме Gradle не рассматриваю и другим не советую
+
+- на уровне тестового движка
+- на уровне блоков кода в тесте (см. раздел Встроенные ожидания и retry)
+
+На текущей момент в версии **Kotest** `4.3.2` нет функционала для перезапуска нестабильных тестов.  
+И не работает интеграция с Gradle плагином [`test-retry-gradle-plugin`](https://github.com/gradle/test-retry-gradle-plugin).
+
+Есть возможность перезапустить отдельный блок кода. Это особенно актуально для UI тестирования, когда клик на некоторые элементы иногда не
+срабатывает.  
+Представьте ситуацию с `Dropdown` внизу страницы, после скролла происходит клик, далее ожидание раскрытия элементов и клик на элемент
+списка, так вот независимо от Фронтового фреймворка иногда клик для раскрытия списка может не сработать и список не появляется, нужно еще
+раз попробовать начиная с клика.
+
+Можно сделать повтор через `try/catch`, но лучше использовать
+функцию `suspend fun <T, E : Throwable> retry(maxRetry: Int, timeout: Duration, delay: Duration = 1.seconds, multiplier: Int = 1, exceptionClass: KClass<E>, f: suspend () -> T):`:
+
+```kotlin
+// using Selenide
+dropdown.scrollTo()
+retry(2, 20.seconds, exceptionClass = Throwable::class) {
+    dropdown.click()
+    dropdownItems.find(Condition.text("1")).apply {
+        click()
+        should(Condition.disappear)
+    }
+}
+```
+
+Действие `scrollTo` повторять не нужно. После перехода к элементу блок с раскрытием списка и выбором повторить 2 раза, но не дольше 20 сек
+игнорируя все исключения (или более конкретные).
+
+В **Kotest** возможно создать свое расширение для перезапуска упавших `спецификаций/контейнеров теста/тестов`.  
+В *3 части* руководства я покажу как создать самый простой вариант для тестов.  
+Остальные варианты я планирую реализовать в своем GitHub репозиторие и выпустить в MavenCentral, если к тому моменту разработчик Kotest не
+добавит поддержку 'из коробки'.
 
 ### Фабрики тестов
-
-### Встроенные расширения и слушатели
-
-### Пишем свое расширение
 
 ### Property тестирование
 
@@ -589,5 +780,3 @@ object ProjectConfig : AbstractProjectConfig() {
 #### Написание и конфигурирование Property тестов
 
 #### Использование генераторов для Data-Driver тестов
-
-### Глобальный конфиг 

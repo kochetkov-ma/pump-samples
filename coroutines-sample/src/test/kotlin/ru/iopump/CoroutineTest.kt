@@ -4,7 +4,7 @@ import io.kotest.core.spec.style.StringSpec
 import kotlinx.coroutines.*
 import kotlin.concurrent.thread
 
-open class DockerComposeTest : StringSpec() {
+open class CoroutineTest : StringSpec() {
 
     init {
         "launch - print only 2" {

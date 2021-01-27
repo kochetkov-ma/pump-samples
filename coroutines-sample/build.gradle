@@ -12,7 +12,7 @@ dependencies {
     testImplementation "io.kotest:kotest-property:$kotestVersion" // for kotest property test
 
     /** Logger implementation */
-    runtimeOnly "ch.qos.logback:logback-classic:$logbackVersion"
+    testImplementation "org.slf4j:slf4j-simple:$slf4jVersion"
 }
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
     sourceCompatibility = JavaVersion.VERSION_11

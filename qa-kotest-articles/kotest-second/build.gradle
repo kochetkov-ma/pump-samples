@@ -50,3 +50,10 @@ task parallelismTest(type: Test) {
     doFirst { systemProperties = System.properties + ["kotest.framework.parallelism": 3] }
     filter { includeTestsMatching("ru.iopump.qa.sample.parallelism.*") }
 }
+
+// WAIT //
+task waitTest(type: Test) {
+    group "test"
+    useJUnitPlatform()
+    filter { includeTestsMatching("ru.iopump.qa.sample.wait.*") }
+}
