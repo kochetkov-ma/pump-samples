@@ -6,7 +6,7 @@ Kotlin. Автоматизация тестирования (часть 2). Kote
 на основе фреймворка **Kotest** с использованием наиболее полезных дополнительных библиотек, существенно облегчающих и ускоряющих создание
 тестов. В этой части мы углубимся в возможности Kotest, рассмотрим Property Testing и создадим пользовательское расширение.
 
-Для освежения знаний привожу ссылки на прошлые части руководства:
+Все части руководства:
 
 - [Часть 1. Kotest: Начало](https://habr.com/ru/post/520380/)
 
@@ -345,10 +345,10 @@ task parallelismTest(type: Test) {
 И лог:
 
 ```
-2021-01-20 21:15:44:979 [SpecRunner-2] INFO ru.iopump.qa.sample.parallelism.OneParallelOnTestLevelSpec - test 2 started
-2021-01-20 21:15:44:979 [SpecRunner-1] INFO ru.iopump.qa.sample.parallelism.OneParallelOnTestLevelSpec - test 1 started
-2021-01-20 21:15:45:490 [SpecRunner-1] INFO ru.iopump.qa.sample.parallelism.OneParallelOnTestLevelSpec - test 1 finished
-2021-01-20 21:15:45:990 [SpecRunner-2] INFO ru.iopump.qa.sample.parallelism.OneParallelOnTestLevelSpec - test 2 finished
+21:15:44:979 OneParallelOnTestLevelSpec - test 2 started
+21:15:44:979 OneParallelOnTestLevelSpec - test 1 started
+21:15:45:490 OneParallelOnTestLevelSpec - test 1 finished
+21:15:45:990 OneParallelOnTestLevelSpec - test 2 finished
 ```
 
 По логу видно, что `test 1` и `test 2` запустились одновременно в `21:15:44:979` и завершились первый в `21:15:45:490` и второй через 500мс
@@ -425,21 +425,21 @@ class ThreeParallelSpec : FreeSpec() {
 Все 3 спецификации должны запуститься параллельно, а также тесты в `OneParallelOnTestLevelSpec` выполняться в своих 2-ух потоках:
 
 ```
-2021-01-20 21:44:16:216 [kotest-engine-1] INFO ru.iopump.qa.sample.extension.CustomKotestExtension - [BEFORE] prepareSpec class ru.iopump.qa.sample.parallelism.ThreeParallelSpec
-2021-01-20 21:44:16:216 [kotest-engine-2] INFO ru.iopump.qa.sample.extension.CustomKotestExtension - [BEFORE] prepareSpec class ru.iopump.qa.sample.parallelism.TwoParallelSpec
-2021-01-20 21:44:16:216 [kotest-engine-0] INFO ru.iopump.qa.sample.extension.CustomKotestExtension - [BEFORE] prepareSpec class ru.iopump.qa.sample.parallelism.OneParallelOnTestLevelSpec
-2021-01-20 21:44:18:448 [SpecRunner-3] INFO ru.iopump.qa.sample.parallelism.ThreeParallelSpec - test 2 started
-2021-01-20 21:44:18:448 [SpecRunner-6] INFO ru.iopump.qa.sample.parallelism.OneParallelOnTestLevelSpec - test 1 started
-2021-01-20 21:44:18:448 [SpecRunner-5] INFO ru.iopump.qa.sample.parallelism.TwoParallelSpec - test 1 started
-2021-01-20 21:44:18:448 [SpecRunner-4] INFO ru.iopump.qa.sample.parallelism.OneParallelOnTestLevelSpec - test 2 started
-2021-01-20 21:44:18:959 [SpecRunner-6] INFO ru.iopump.qa.sample.parallelism.OneParallelOnTestLevelSpec - test 1 finished
-2021-01-20 21:44:19:465 [SpecRunner-5] INFO ru.iopump.qa.sample.parallelism.TwoParallelSpec - test 1 finished
-2021-01-20 21:44:19:465 [SpecRunner-3] INFO ru.iopump.qa.sample.parallelism.ThreeParallelSpec - test 2 finished
-2021-01-20 21:44:19:465 [SpecRunner-4] INFO ru.iopump.qa.sample.parallelism.OneParallelOnTestLevelSpec - test 2 finished
-2021-01-20 21:44:19:471 [SpecRunner-5] INFO ru.iopump.qa.sample.parallelism.TwoParallelSpec - test 2 started
-2021-01-20 21:44:19:472 [SpecRunner-3] INFO ru.iopump.qa.sample.parallelism.ThreeParallelSpec - test 1 started
-2021-01-20 21:44:20:484 [SpecRunner-3] INFO ru.iopump.qa.sample.parallelism.ThreeParallelSpec - test 1 finished
-2021-01-20 21:44:20:484 [SpecRunner-5] INFO ru.iopump.qa.sample.parallelism.TwoParallelSpec - test 2 finished
+21:44:16:216 [kotest-engine-1] CustomKotestExtension - [BEFORE] prepareSpec class ru.iopump.qa.sample.parallelism.ThreeParallelSpec
+21:44:16:216 [kotest-engine-2] CustomKotestExtension - [BEFORE] prepareSpec class ru.iopump.qa.sample.parallelism.TwoParallelSpec
+21:44:16:216 [kotest-engine-0] CustomKotestExtension - [BEFORE] prepareSpec class ru.iopump.qa.sample.parallelism.OneParallelOnTestLevelSpec
+21:44:18:448 [SpecRunner-3] ThreeParallelSpec - test 2 started
+21:44:18:448 [SpecRunner-6] OneParallelOnTestLevelSpec - test 1 started
+21:44:18:448 [SpecRunner-5] TwoParallelSpec - test 1 started
+21:44:18:448 [SpecRunner-4] OneParallelOnTestLevelSpec - test 2 started
+21:44:18:959 [SpecRunner-6] OneParallelOnTestLevelSpec - test 1 finished
+21:44:19:465 [SpecRunner-5] TwoParallelSpec - test 1 finished
+21:44:19:465 [SpecRunner-3] ThreeParallelSpec - test 2 finished
+21:44:19:465 [SpecRunner-4] OneParallelOnTestLevelSpec - test 2 finished
+21:44:19:471 [SpecRunner-5] TwoParallelSpec - test 2 started
+21:44:19:472 [SpecRunner-3] ThreeParallelSpec - test 1 started
+21:44:20:484 [SpecRunner-3] ThreeParallelSpec - test 1 finished
+21:44:20:484 [SpecRunner-5] TwoParallelSpec - test 2 finished
 ```
 
 По логу видно, что все 3 спецификации прошли за 2 сек — это сумма последовательных тестов одной их спецификаций выше, тесты
@@ -471,6 +471,8 @@ executor.submit {
 Имеется большой набор вариантов для установки таймаутов на время выполнения теста.
 
 Привожу пример спецификации со всеми вариантами таймаута:
+
+> Для пояснений в коде я буду использовать метки формата `/*номер*/` и после примера рассказывать про каждую в виде: `номер` -
 
 ```kotlin
 @ExperimentalTime
@@ -518,39 +520,38 @@ class TimeoutSpec : FreeSpec() {
 
 > Агрегирующего таймаута на всю спецификацию нет. Все вариант устанавливают таймаут только на тест.
 
-**5** - В **Kotest** есть возможность задать кол-во успешных выполнений одного теста, чтобы считать его успешным.  
+`5` - В **Kotest** есть возможность задать кол-во успешных выполнений одного теста, чтобы считать его успешным.  
 Например, чтобы проверить требование отсутствия состояния в системы, можно выполнить тест несколько раз, если хотя бы одно выполнение будет
 неуспешным, то тест будет считаться неуспешным.  
 Не путайте с fluky - это как раз обратная ситуация.
 
-**1** - Через переопределение метода. Установить таймаут на тест в мс.
+`1` - Через переопределение метода. Установить таймаут на тест в мс.
 
-**2** - Через переопределение метода. Установить таймаут на один вызов теста в мс (см **5**).
+`2` - Через переопределение метода. Установить таймаут на один вызов теста в мс (см `5`).
 
-**3** - Через свойство. Установить таймаут на тест в мс и переписать **1**
+`3` - Через свойство. Установить таймаут на тест в мс и переписать `1`
 
-**4** - Через свойство. Установить таймаут на один вызов теста в мс и переписать **2** (см **5**).
+`4` - Через свойство. Установить таймаут на один вызов теста в мс и переписать `2` (см `5`).
 
-**6** - Через метод конфигурации теста. Установить таймаут на тест в `kotlin.time.Duration` и переписать **3**.
+`6` - Через метод конфигурации теста. Установить таймаут на тест в `kotlin.time.Duration` и переписать `3`.
 
-**7** - Через метод конфигурации теста. Установить таймаут на один вызов теста в `kotlin.time.Duration` и переписать **
-4** (см **5**).
+`7` - Через метод конфигурации теста. Установить таймаут на один вызов теста в `kotlin.time.Duration` и переписать `4` (см `5`).
 
 > `kotlin.time.Duration` имеет статус `Experimental` и при использовании требует установки `@ExperimentalTime` над классом спецификации
 
 Разберем лог запуска `TimeoutSpec`:
 
 ```
-2021-01-21 08:23:35:183 [SpecRunner-1 @coroutine#6] INFO ru.iopump.qa.sample.timeout.TimeoutSpec - test 1
-2021-01-21 08:23:35:698 [SpecRunner-1 @coroutine#7] INFO ru.iopump.qa.sample.timeout.TimeoutSpec - test 1
-2021-01-21 08:23:36:212 [SpecRunner-1 @coroutine#4] INFO ru.iopump.qa.sample.extension.CustomKotestExtension - [AFTER] afterTest. Test case duration: 1047 ms
+08:23:35:183 TimeoutSpec - test 1
+08:23:35:698 TimeoutSpec - test 1
+08:23:36:212 CustomKotestExtension - [AFTER] afterTest. Test case duration: 1047 ms
 
-2021-01-21 08:23:36:217 [SpecRunner-1 @coroutine#10] INFO ru.iopump.qa.sample.timeout.TimeoutSpec - test 2
+08:23:36:217 TimeoutSpec - test 2
 Test did not complete within 400ms
 TimeoutException(duration=400)
 
-2021-01-21 08:23:36:625 [SpecRunner-1 @coroutine#13] INFO ru.iopump.qa.sample.timeout.TimeoutSpec - test 3
-2021-01-21 08:23:37:141 [SpecRunner-1 @coroutine#14] INFO ru.iopump.qa.sample.timeout.TimeoutSpec - test 3
+08:23:36:625 TimeoutSpec - test 3
+08:23:37:141 TimeoutSpec - test 3
 Test did not complete within 1000ms
 TimeoutException(duration=1000)
 ```
@@ -667,24 +668,24 @@ class WaitSpec : FreeSpec() {
 
 ```
 
-**1** Блок с полями для подсчета попыток и описания итератора из 3-ех элементов
+`1` - Блок с полями для подсчета попыток и описания итератора из 3-ех элементов
 
-**2** Перед каждым тестовым контейнером сбрасывать счетчики
+`2` - Перед каждым тестовым контейнером сбрасывать счетчики
 
-**3** Вызывается функция `eventually`, который закончится успешно. Общий таймаут 200 мс, перерыв между попытками 50 мс, игнорировать
+`3` - Вызывается функция `eventually`, который закончится успешно. Общий таймаут 200 мс, перерыв между попытками 50 мс, игнорировать
 исключение `IllegalStateException`
 
-**4** Первые две итерации выбрасывают `IllegalStateException`, а 3-я завершается успешно.
+`4` - Первые две итерации выбрасывают `IllegalStateException`, а 3-я завершается успешно.
 
-**5** Тут ожидается, что `eventually` закончится неуспешно и выполняется проверка выброшенного исключения. При неудаче `eventually`
+`5` - Тут ожидается, что `eventually` закончится неуспешно и выполняется проверка выброшенного исключения. При неудаче `eventually`
 выбрасывает `AssertionError` с информацией о причине неудачи и настройках.
 
-**6** таймаута 100 мс и перерыв между попытками 50 мс, позволяют выполнить только 2 неудачный попытки, в итоге ожидание завершается
+`6` - таймаута 100 мс и перерыв между попытками 50 мс, позволяют выполнить только 2 неудачный попытки, в итоге ожидание завершается
 неуспешно
 
-**7** `continually` выполнит 4 попытки, все из которых будут успешные и само ожидание завершится успехом
+`7` - `continually` выполнит 4 попытки, все из которых будут успешные и само ожидание завершится успехом
 
-**8** Тут ожидается, что `continually` закончится неуспешно и выполняется проверка выброшенного исключения. При неудаче `continually`
+`8` - Тут ожидается, что `continually` закончится неуспешно и выполняется проверка выброшенного исключения. При неудаче `continually`
 перебрасывает последнее Исключение от кода внутри, то есть `IllegalStateException`, чем отличается от `eventually`
 
 Лог выполнения с пояснениями:
@@ -773,6 +774,102 @@ retry(2, 20.seconds, exceptionClass = Throwable::class) {
 
 ### Фабрики тестов
 
+Представим, что в каждом тесте нужно выполнять одни и те же действия для подготовки окружения: наполнять БД, очереди, конфиги на файловой
+системе. Для этих действий хочется создать шаблон теста с адекватным именем, возможно с описанием в виде `javadoc`/`kdoc` и несколькими
+аргументами, например именем и паролем тестового пользователя. В **Kotest** такой подход называется `Test Factories` и позволяет вставлять
+куски тестов в корневой тест.  
+Это ни функции, ни методы, ни абстракции — это параметризованные части теста с той же структурой, что основной тест, но используемые в
+нескольких местах кода.
+
+> Я придерживаюсь правила, что **спецификация** теста должен быть понятен любому человеку, имеющему экспертизу в предметной бизнес-области теста.  
+> По **спецификацией** теста я понимаю не реализацию, а описания шагов в виде строк в BDD стиле. В [1-ой части руководства]() я раскрывал тему форматирования теста более подробно.  
+> Даже если требуется много `copy/paste` для сохранения формата теста, **нужно** это делать.  
+> А вот тестовый движок/фреймворк позволяет **спецификацию** теста запустить, провести взаимодействия с системой автоматически, как если бы все что написано в тесте делал человек.
+
+Очень важно не нарушать читабельность теста использованием шаблонов:
+
+- имя шаблона должно быть понятное и сопровождаться описанием, а так же описанием всех параметров.
+- шаблон должен выполнять одну функцию, например настройка БД (принцип единственной ответственности)
+- шаблон должен быть описан в BDD стиле
+- шаблон не должен быть слишком абстрактным (субъективно)
+
+Теперь к реализации в **Kotest**. Она очень ограничена, поэтому я приведу пример того как рекомендует делать шаблоны официальная
+документация и как это удобнее делать своими силами через `scoped` функции и функции-расширения. Пример кода с пояснениями:
+
+```kotlin
+class FactorySpec : FreeSpec() {
+    init {
+        /*1.1*/include(containerFactory(1, 2, log))
+        "root container" - {
+            /*2.1*/containerTemplate()
+        }
+    }
+}
+
+/** Kotest factory */
+fun containerFactory(argument1: Any, argument2: Any, logger: Logger) =
+    /*1.2*/freeSpec {
+    beforeContainer { logger.info("This 'beforeContainer' callback located in the test factory") }
+
+    "factory container" - {
+        "factory test with argument1 = $argument1" { }
+        "factory test with argument2 = $argument2" { }
+    }
+}
+
+/** Add [TestType.Container] by scoped function extension */
+/*2.2*/suspend inline fun FreeScope.containerTemplate(): Unit {
+    "template container with FreeScope context" - {
+        /*2.3*/testCaseTemplate()
+    }
+}
+
+/** Add [TestType.Test] by scoped function extension */
+/*2.4*/suspend inline fun FreeScope.testCaseTemplate(): Unit {
+    "nested template testcase with FreeScope context" { }
+}
+
+private val log = LoggerFactory.getLogger(FactorySpec::class.java)
+```
+
+##### TestFactory
+
+`1.1` - С помощью метода `fun include(factory: TestFactory)` ме можем включить шаблон теста в спецификацию в качестве самостоятельного
+теста.
+
+`1.2` - Определена функция, которая возвращает экземпляр `TestFactory` и принимает несколько параметров. Для создания инстанса `TestFactory`
+используем функцию `fun freeSpec(block: FreeSpecTestFactoryConfiguration.() -> Unit): TestFactory`, которая принимает блок тестов и
+предоставляет контекст `FreeSpecTestFactoryConfiguration`. Внутри этого блока пишем тест, как обычно, в BDD силе. Далее с помощью `include`
+шаблон вставляется как обычный контейнер теста.
+
+> Для `TestFactory` выполняются все обратные вызовы, что и определены для спецификации, куда встраивается шаблон.   
+> А также доступны все методы для создания обратных вызовов внутри фабрики, например `beforeContainer`.  
+> У `TestFactory` есть большие ограничения:
+> - нельзя вставлять друг в друга
+> - встраивать можно только на уровень спецификации, то есть фабрика должна быть полным тестом, а не частью теста.
+
+##### Шаблоны через `scoped`-функции и функции-расширения.
+
+`2.1` - Внутри контейнера вызывается пользовательская функция `containerTemplate` и добавляет к контексту этого контейнера новые шаги теста.
+
+`2.2` - Функция `suspend inline fun FreeScope.containerTemplate(): Unit` выполняет свой код в контексте внешнего теста `FreeScope` и
+просто **изменяет** этот контекст, добавляя новый вложенный контейнер.  
+Функция ничего не возвращает, а именно изменяет (`side-effect`) переданный контекст. Тесты пишем, так как будто они не в отдельной функции,
+а в спецификации.  
+`suspend` - обязателен, т.к. все тесты запускаются в корутине.  
+`inline` - для скорости, не обязателен. Указывает компилятору на то, что код этой функции нужно просто скопировать в место вызова, то есть в
+байт-коде, не будет `containerTemplate`, а будет вставленный код в спецификации.  
+`FreeScope.` - внутренности вызываются в контексте этого объекта, в данном случае контейнера
+
+`2.3` - Внутри нашего шаблона вызываем другой шаблон, который добавлен новые шаги. В реальных тестах так делать **не следует**
+
+`2.4` - Функция `suspend inline fun FreeScope.testCaseTemplate(): Unit` добавляет вложенные шаги теста в место вызова. Все тоже самое, что
+и `2.2`
+
+В итоге мы имеем следующую структуру теста после выполнения:
+
+![](https://habrastorage.org/webt/p-/ie/zr/p-iezrb-ceh51xhmesr5fvmlico.png)
+
 ### Property тестирование
 
 #### Генераторы данных
@@ -780,3 +877,29 @@ retry(2, 20.seconds, exceptionClass = Throwable::class) {
 #### Написание и конфигурирование Property тестов
 
 #### Использование генераторов для Data-Driver тестов
+
+Заключение
+------
+Во-первых, привожу ссылку на все
+примеры [qa-kotest-articles/kotest-second](https://github.com/kochetkov-ma/pump-samples/tree/master/qa-kotest-articles/kotest-second).
+
+Был рассмотрен практически весь функционал **Kotest**
+
+Осталось рассказать про создание расширений и доступные встроенные расширения, а далее перейдем к интеграции с другими библиотеками
+помогающими в автоматизации тестирования
+
+Ресурсы
+------
+[Kotlin. Автоматизация тестирования (часть 1). Kotest: Начало](https://habr.com/ru/post/520380/)
+
+[Примеры](https://github.com/kochetkov-ma/pump-samples/tree/master/qa-kotest-articles/kotest-second)
+
+[Официальная документация Kotest](https://kotest.io/docs/quickstart)
+
+[Kotest GitHub](https://github.com/kotest/kotest)
+
+[Kotlinlang](https://kotlinlang.org/docs/reference/)
+
+[Coroutines tutorial](https://kotlinlang.org/docs/tutorials/coroutines/coroutines-basic-jvm.html)
+
+[Gradle testing](https://docs.gradle.org/current/userguide/java_testing.html)

@@ -8,7 +8,6 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 class FactorySpec : FreeSpec() {
-
     init {
         /*1.1*/include(containerFactory(1, 2, log))
         "root container" - {
@@ -29,14 +28,14 @@ fun containerFactory(argument1: Any, argument2: Any, logger: Logger) =
 }
 
 /** Add [TestType.Container] by scoped function extension */
-/*2.2*/suspend inline fun FreeScope.containerTemplate() = apply {
+/*2.2*/suspend inline fun FreeScope.containerTemplate(): Unit {
     "template container with FreeScope context" - {
-        /*2-3*/testCaseTemplate()
+        /*2.3*/testCaseTemplate()
     }
 }
 
 /** Add [TestType.Test] by scoped function extension */
-/*2.4*/suspend inline fun FreeScope.testCaseTemplate() = apply {
+/*2.4*/suspend inline fun FreeScope.testCaseTemplate(): Unit {
     "nested template testcase with FreeScope context" { }
 }
 
