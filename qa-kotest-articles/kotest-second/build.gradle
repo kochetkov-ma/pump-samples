@@ -1,3 +1,6 @@
+dependencies {
+    implementation "com.github.f4b6a3:uuid-creator:$uuidVersion"
+}
 // TAG //
 task gradleBuildInFilterTest(type: Test) {
     group "test"
