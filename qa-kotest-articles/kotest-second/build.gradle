@@ -60,3 +60,15 @@ task waitTest(type: Test) {
     useJUnitPlatform()
     filter { includeTestsMatching("ru.iopump.qa.sample.wait.*") }
 }
+// FACTORY //
+task factoryTest(type: Test) {
+    group "test"
+    useJUnitPlatform()
+    filter { includeTestsMatching("ru.iopump.qa.sample.factory.*") }
+}
+// PROPERTY //
+task propertyTest(type: Test) {
+    group "test"
+    useJUnitPlatform()
+    filter { includeTestsMatching("ru.iopump.qa.sample.property.*") }
+}

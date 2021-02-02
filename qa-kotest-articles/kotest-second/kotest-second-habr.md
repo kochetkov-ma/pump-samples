@@ -883,14 +883,17 @@ private val log = LoggerFactory.getLogger(FactorySpec::class.java)
 
 В Kotest существует 2 типа генераторов данных:
 
-- `Arb` (Arbitrary) генерирует бесконечные последовательности из которых по-умолчанию используется 1000 значений
-- `Exhaustive` для полного перебора ограниченных наборов значений Полный список генерируемых типов довольно большой и хорошо описан
-  в [официальной документации](https://kotest.io/docs/proptest/property-test-generators-list.html)
+- `Arb` (Arbitrary - Случайный) генерирует бесконечные последовательности из которых по-умолчанию используется 1000 значений
+- `Exhaustive` (Исчерпывающий) служит для полного перебора ограниченного набора значений
+
+Полный список генерируемых типов довольно большой и хорошо описан
+в [официальной документации](https://kotest.io/docs/proptest/property-test-generators-list.html)
 
 Основная цель генераторов — это возможность запускать Property-тесты на их основе. Второстепенная цель — генерация единичных значений. Также
 генераторы предоставляют широкий набор методов по настройке и модификации генерируемой последовательности.
 
-Приведу несколько примеров генераторов для генерации единичных значений или ограниченного набора значений:
+Приведу несколько примеров генераторов для генерации единичных значений или ограниченного набора значений, которые можно с успехом
+использовать в Data-Driven тестах:
 
 ```kotlin
 /** For string generator with leading zero */
@@ -980,21 +983,174 @@ tcMPeaTeXG
 
 #### Написание и конфигурирование Property тестов
 
-**Kotest** предоставляет два метода для запуска Property-тестов, а также из перегруженные вариации:
+**Kotest** предоставляет две функции для запуска Property-тестов, а также их перегруженные вариации:
 
 - `suspend inline fun <reified A> forAll(crossinline property: PropertyContext.(A) -> Boolean)`
 - `suspend inline fun <reified A> checkAll(noinline property: suspend PropertyContext.(A) -> Unit)`
 
-Отличие заключается в том, что переданный блок в `forAll` должен возвращать `Boolean`, а в `checkAll` все проверки должны быть внутри, что
-для нас более привычно.
+Отличие между ними заключается в том, что переданный блок в `forAll` должен возвращать `Boolean`, а в `checkAll` все проверки должны быть
+внутри, что более привычно.
 
-##### Генераторы по-умолчанию
+Выполнить 1000 итераций кода со случайным входным числом типа `Long`:
 
-Если не
+```kotlin
+checkAll<Long> { long: Long ->
+    val attempt = this.attempts()
+    println("#$attempt - $long")
+    long.shouldNotBeNull()
+}
+```
+
+Обращаю внимание на то, что функциональное выражение в аргументе `forAll` и `checkAll` не простое, а с дополнительным контекстом!
+
+`suspend PropertyContext.(A) -> Unit` - имеем аргумент generic типа (в примере это `long: Long`), но также имеем доступ к
+контексту `PropertyContext`, через ключевое слово `this` (для красоты его можно опустить).
+
+`val attempt = this.attempts()` - здесь возвращается кол-во пройденных попыток из `PropertyContext`, но там есть и другие полезные методы.
 
 ##### Пользовательские генераторы
 
+У обоих видов генераторов (`Arb` и `Exhaustive`) есть терминальные методы `forAll` и `checkAll`, которые запускают блок теста, принимающий
+сгенерированные значения в качестве аргумента.
+
+###### Arb
+
+Рассмотрим написание Property-теста на примере основной теоремы арифметики: каждое натуральное число можно представить в виде произведения
+простых чисел. Также это называется факторизация. Допустим у нас есть реализованный на Kotlin алгоритм разложения (код можно
+найти [в примерах](https://github.com/kochetkov-ma/pump-samples/blob/master/qa-kotest-articles/kotest-second/src/test/kotlin/ru/iopump/qa/sample/property/DefaultPropertySpec.kt#L52))
+и его необходимо протестировать на достаточном наборе данных.
+
+Тестовый сценарий: сгенерированное число, разложить с помощью алгоритма на простые множители и проверить, что полученные множители простые и
+их произведение равно исходному числу — тем самым мы проверим реализацию алгоритма. Очевидно, что одного прогона недостаточно и 10 прогонов
+недостаточно, как минимум нужно прогнать тест на 1000 случайных величин, а может и больше.
+
+Параметры генератора данных: Кол-во = 1000. Сгенерированное число должно быть больше 1. В сгенерированной последовательности первые два
+числа должны быть: `2` и `2147483647`.
+
+```kotlin
+"Basic theorem of arithmetic. Any number can be factorized to list of prime" {
+    /*1*/Arb.int(2..Int.MAX_VALUE).withEdgecases(2, Int.MAX_VALUE).forAll(1000) { number ->
+    val primeFactors = number.primeFactors
+    println("#${attempts()} Source number '$number' = $primeFactors")
+    /*2*/primeFactors.all(Int::isPrime) && primeFactors.reduce(Int::times) == number
+}
+
+    /*3*/Arb.int(2..Int.MAX_VALUE).checkAll(1000) { number ->
+    val primeFactors = number.primeFactors
+    println("#${attempts()} Source number '$number' = $primeFactors")
+    /*4*/primeFactors.onEach { it.isPrime.shouldBeTrue() }.reduce(Int::times) shouldBe number
+}
+}
+```
+
+`1` - создается генератор на 1000 итераций, множество значений от 2 до Int.MAX_VALUE включительно, отдельным методом `withEdgecases`
+необходимо явно указать 2 и Int.MAX_VALUE граничными значениями. Методом `forAll` запускаем тестирование, выходной результат блока
+теста `Boolean`. `AssertionError` движок выбросит за нас, если будет результат `false`.
+
+`2` - метод `all` принимает ссылку на метод и проверяет, что каждый множитель простой, метод `reduce` выполняет умножение, а также
+выполняется конъюнкцию двух проверок.
+
+`3` - все абсолютно аналогично `1`. Отличие только в том, что блок кода не должен возвращать `Boolean` и мы используем
+стандартные `Assertions`, как в обычном тесте.
+
+`4` - вместо логических операций используем проверки **Kotest**
+
+###### Exhaustive
+
+Для исчерпывающего тестирования все аналогично `Arb` подходу.
+
+Допустим, реализован метод, который в зависимости от enum `UUIDVersion` генерирует указанный тип `UUID`
+
+- `fun UUIDVersion?.generateUuid(): UUID`, а также же метод должен принимать `null` и генерировать `UUID` типа `UUIDVersion.ANY`. Чтобы
+  проверить этот функционал, нужно перебрать все значения `UUIDVersion` + `null`. Не имея знаний о возможностях `Exhaustive` можно просто
+  перебрать данные в цикле. Однако `Exhaustive` еще упрощает и без того несложную задачу:
+
+```kotlin
+"UUIDVersion should be matched with regexp" {
+    /*1*/Exhaustive.enum<UUIDVersion>().andNull().checkAll { uuidVersion ->
+    /*2*/uuidVersion.generateUuid().toString()
+    /*3*/.shouldBeUUID(uuidVersion ?: UUIDVersion.ANY)
+    .also { println("${attempts()} $uuidVersion: $it") }
+}
+}
+```
+
+`1` - `reified` функция `Exhaustive.enum` создаст последовательность всех значений `UUIDVersion` и добавит `null`, а далее будет вызван
+Property-тест
+
+`2` - вызов тестируемой функции-расширения дл генерации `UUID`
+
+`3` - встроенная в **Kotest** проверка на соответствие `UUID` регулярному выражению
+
+##### Генераторы по-умолчанию
+
+Если использовать функции `forAll` и `checkAll` без явного указания генератора типа `Arb` или `Exhaustive`, то будет использовать генератор
+по-умолчанию в зависимости от `Generic-типа`. Например для `forAll<String>{ }` будет использован генератор `Arb.string()`. Вот полный набор
+из внутренностей **Kotest**:
+
+```kotlin
+fun <A> defaultForClass(kClass: KClass<*>): Arb<A>? {
+    return when (kClass.bestName()) {
+        "java.lang.String", "kotlin.String", "String" -> Arb.string() as Arb<A>
+        "java.lang.Character", "kotlin.Char", "Char" -> Arb.char() as Arb<A>
+        "java.lang.Long", "kotlin.Long", "Long" -> Arb.long() as Arb<A>
+        "java.lang.Integer", "kotlin.Int", "Int" -> Arb.int() as Arb<A>
+        "java.lang.Short", "kotlin.Short", "Short" -> Arb.short() as Arb<A>
+        "java.lang.Byte", "kotlin.Byte", "Byte" -> Arb.byte() as Arb<A>
+        "java.lang.Double", "kotlin.Double", "Double" -> Arb.double() as Arb<A>
+        "java.lang.Float", "kotlin.Float", "Float" -> Arb.float() as Arb<A>
+        "java.lang.Boolean", "kotlin.Boolean", "Boolean" -> Arb.bool() as Arb<A>
+        else -> null
+    }
+}
+```
+
+И примеры кода:
+
+```kotlin
+"check 1000 Long numbers" {
+    checkAll<Long> { long ->
+        long.shouldNotBeNull()
+    }
+}
+```
+
 ##### Seed
+
+Последнее, что хотелось бы добавить про Property-тестирование и генераторы, это воспроизведение ошибки. Для этого необходимо повторить
+тестовые данные. Чтобы повторить последовательность, существует такое понятие, как **seed**. Используемый алгоритм псевдо случайных чисел
+для генерации последовательности использует некий порождающий элемент (seed), и для равных seed получаются равные последовательности. Само
+семя изначально генерируется случайно, используя внешний порождающий элемент, например время либо физический процесс. При возникновении
+ошибки **Kotest** печатает используемое семя, которое можно указать в конфигурации теста и воспроизвести результат.
+
+```kotlin
+"print seed on fail" {
+    /*1*/shouldThrow<AssertionError> {
+    checkAll<Int> { number ->
+        println("#${attempts()} $number")
+        /*2*/number.shouldBeGreaterThanOrEqual(0)
+    }
+}./*3*/message.shouldContain("Repeat this test by using seed -?\\d+".toRegex())
+}
+"test with seed will generate the same sequence" {
+    Arb.int().checkAll(/*4*/ PropTestConfig(1234567890)) { number ->
+        /*5*/if (attempts() == 24) number shouldBe 196548668
+        if (attempts() == 428) number shouldBe -601350461
+        if (attempts() == 866) number shouldBe 1742824805
+    }
+}
+```
+
+`1` - Ожидаем исключение `AssertionError` с семенем.
+
+`2` - Из 1000 чисел последовательности примерно половина будет точно меньше 0 и проверка должна сработать почти сразу
+
+`3` - Демонстрация, что сообщение исключения содержит информацию о числе **seed**
+
+`4` - для теста явно указано семя в конструкторе `PropTestConfig`. Ожидаем, что для этого теста будет генерироваться всегда одна
+последовательность, независимо от платформы
+
+`5` - `attempts()` возвращает номер итерации. Для итераций 24, 428, 866 будут всегда сгенерированы одинаковые числа
 
 Заключение
 ------
