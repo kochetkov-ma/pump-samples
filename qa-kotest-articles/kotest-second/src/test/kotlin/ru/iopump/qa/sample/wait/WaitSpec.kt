@@ -23,14 +23,14 @@ class WaitSpec : FreeSpec() {
     init {
         /*2*/
         beforeTest {
-            tries = listOf(false, false, true).iterator()
+            tries = listOf(true, true, false).iterator()
             counter = AtomicInteger()
         }
 
         "eventually waiting should be success" {
             /*3*/eventually(200.milliseconds, 50.milliseconds, IllegalStateException::class) {
             log.info("Try #$num")
-            if (tries.next().not()) /*4*/ throw IllegalStateException("Try #$counter")
+            if (tries.next()) /*4*/ throw IllegalStateException("Try #$counter")
         }
         }
 
@@ -38,7 +38,7 @@ class WaitSpec : FreeSpec() {
             /*5*/shouldThrow<AssertionError> {
             eventually(/*6*/100.milliseconds, 50.milliseconds, IllegalStateException::class) {
                 log.info("Try #$num")
-                if (tries.next().not()) throw IllegalStateException("Try #$counter")
+                if (tries.next()) throw IllegalStateException("Try #$counter")
             }
         }.toString().also(log::error)
         }
