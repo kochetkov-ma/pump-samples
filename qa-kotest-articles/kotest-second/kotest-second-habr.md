@@ -1,6 +1,6 @@
 Kotlin. Автоматизация тестирования (Часть 2). Kotest. Deep Diving
 ======
-![Kotest](https://habrastorage.org/webt/v5/e5/bd/v5e5bdqn6wzbubebhh1lkni0iiw.png)
+![Kotest](https://habrastorage.org/webt/cj/zc/qd/cjzcqdkrw3ru3nxv04yeo-vbz0g.jpeg)
 
 Продолжение цикла публикаций про автоматизацию функционального тестирования на **Kotlin**
 с использованием фреймворка **Kotest** совместно с наиболее полезными дополнительными библиотеками, существенно облегчающими и ускоряющими создание тестов.
