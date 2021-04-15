@@ -1,0 +1,19 @@
+{
+  "request": {
+    "method": "POST",
+    "urlPathPattern": "/employee"
+  },
+  "response": {
+    "status": 200,
+    "bodyFileName": "employee_post.json",
+    "headers": {
+      "Content-Type": "application/json;charset=utf-8"
+    },
+    "transformerParameters": {
+      "id": 1
+    }
+  },
+  "metadata": {
+    "name": "employee_post"
+  }
+}

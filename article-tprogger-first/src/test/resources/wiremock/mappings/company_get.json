@@ -1,0 +1,20 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/company/\\d+",
+    "basicAuthCredentials" : {
+      "username" : "user",
+      "password" : "user"
+    }
+  },
+  "response": {
+    "status": 200,
+    "bodyFileName": "company_get.json",
+    "headers": {
+      "Content-Type": "application/json;charset=utf-8"
+    }
+  },
+  "metadata": {
+    "name": "company_get"
+  }
+}
