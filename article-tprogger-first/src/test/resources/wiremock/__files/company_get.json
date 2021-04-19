@@ -1,4 +1,0 @@
-{
-  "id": "{{request.pathSegments.[1]}}",
-  "name": "MirPlatform Ltd."
-}

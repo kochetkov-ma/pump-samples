@@ -11,28 +11,31 @@ import io.kotest.property.Arb
 import io.kotest.property.arbitrary.next
 import io.kotest.property.arbitrary.positiveInts
 import io.kotest.property.arbitrary.stringPattern
-import kotlinx.coroutines.delay
+import io.qameta.allure.Epic
+import io.qameta.allure.Feature
+import io.qameta.allure.Link
+import io.qameta.allure.Story
+import okhttp3.Credentials
 import retrofit2.Response
 import retrofit2.awaitResponse
-import ru.iopump.qa.sample.StaticProjectConfiguration
-import ru.iopump.qa.sample.StaticProjectConfiguration.objectMapper
-import ru.iopump.qa.sample.StaticProjectConfiguration.wiremockClient
-import ru.iopump.qa.sample.api.EmployeeService
+import ru.iopump.qa.sample.RegistryAndProjectConfiguration.employeeService
+import ru.iopump.qa.sample.RegistryAndProjectConfiguration.wiremockClient
 import ru.iopump.qa.sample.model.Employee
 
 @ExperimentalKotest
+@Epic("Tproger example")
+@Feature("Employee endpoint")
+@Story("CRUD")
+@Link("tproger.ru", url = "https://tproger.ru/")
 class EmployeeSpec : FreeSpec() {
 
     override fun concurrency(): Int = 2
 
-    private val employeeService: EmployeeService = StaticProjectConfiguration.employeeService
-
     init {
-        "Feature: Getting employee by id" - {
+        "Scenario: Getting employee by id" - {
 
             var expectedId = 0
             "Given test environment is up and test data prepared" {
-                delay(5000)
                 expectedId = Arb.positiveInts().next()
             }
 
@@ -41,14 +44,7 @@ class EmployeeSpec : FreeSpec() {
                 response = employeeService.get(expectedId).awaitResponse()
             }
 
-            "Then server received request with id=$expectedId" {
-                wiremockClient.verifyThat(
-                    1,
-                    WireMock.getRequestedFor(WireMock.urlPathEqualTo("/employee/$expectedId"))
-                )
-            }
-
-            "And client received response with status 200 and id=$expectedId" {
+            "Then client received response with status 200 and id=$expectedId" {
                 response.asClue {
                     it.code() shouldBe 200
                     it.body().shouldNotBeNull().asClue { employee ->
@@ -59,31 +55,30 @@ class EmployeeSpec : FreeSpec() {
             }
         }
 
-        "Feature: Creating new employee" - {
+        "Scenario: Creating new employee" - {
 
             lateinit var employee: Employee
             "Given test environment is up and test data prepared" {
-                delay(5000)
                 employee = Employee(
                     name = Arb.stringPattern("[A-Z]{1}[a-z]{5,10}").next()
                 )
             }
 
             lateinit var response: Response<Employee>
+            val basic = Credentials.basic("user", "user")
             "When client sent request to create new $employee" {
-                response = employeeService.create(employee).awaitResponse()
+                response = employeeService.create(basic, employee).awaitResponse()
             }
 
-            val expectedJson: String = objectMapper.writeValueAsString(employee)
             "Then server received request with $employee" {
                 wiremockClient.verifyThat(
                     1,
                     WireMock.postRequestedFor(WireMock.urlPathEqualTo("/employee"))
-                        .withRequestBody(WireMock.equalToJson(expectedJson))
+                        .withHeader("Authorization", WireMock.equalTo(basic))
                 )
             }
 
-            "And client received response with status 200 and $employee" {
+            "And client received response with status 200 with generated id" {
                 response.asClue {
                     it.code() shouldBe 200
                     it.body().shouldNotBeNull().asClue { e ->
