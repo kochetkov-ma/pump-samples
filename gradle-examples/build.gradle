@@ -1,0 +1,31 @@
+
+task retry {
+
+    doLast {
+        def retryCounter = 0
+        def retryMaxCount = 10
+        def poolDelayMs = 500
+
+        while(retryCounter <= retryMaxCount) {
+            try {
+                doSomething()
+                println("<<<< Retry $retryCounter. SUCCESS")
+                return
+            } catch (Throwable t) {
+                println("<<<< Retry $retryCounter. FAILED")
+                sleep(poolDelayMs)
+            } finally {
+                retryCounter++
+            }
+        }
+    }
+}
+
+ext.tries = 0
+def doSomething() {
+    sleep(1000)
+    ext.tries++
+    if (tries < 5) {
+        throw new RuntimeException("FAIL")
+    }
+}
