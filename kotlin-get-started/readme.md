@@ -5,13 +5,13 @@ Kotlin in IntelliJ Idea
 - Open this folder (with `build.gradle`) as project in Idea
 - Add JDK to project: press `F4` on left `Project Tool` -> `SDk` -> `Add` -> `Apply`
   
-  ![SDk](sdk.png)
+  ![SDk](https://github.com/kochetkov-ma/pump-samples/blob/master/kotlin-get-started/sdk.png?raw=true)
 - Set new SDK to project: press `F4` on left `Project Tool` -> `Project` -> `Project SDK` -> `Set new SDK` -> `OK`
   
-  ![Set SDK for Project](project.png)
+  ![Set SDK for Project](https://github.com/kochetkov-ma/pump-samples/blob/master/kotlin-get-started/project.png?raw=true)
 - Set new SDK to `Gradle Build Tool`: press `Ctrl + Alt + S` -> Find `gradle` in search -> Go to `Gradle JVM` -> Set new SDK -> `OK`
   
-  ![Set SDK for Gradle](gradle.png)
+  ![Set SDK for Gradle](https://github.com/kochetkov-ma/pump-samples/blob/master/kotlin-get-started/gradle.png?raw=true)
 
 - Create new directory `src/main/kotlin/main.kt` with code
 ```kotlin
