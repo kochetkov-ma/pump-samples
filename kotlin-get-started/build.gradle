@@ -1,5 +1,5 @@
 plugins {
-    id 'org.jetbrains.kotlin.jvm' version '1.4.32'
+    id 'org.jetbrains.kotlin.jvm' version '1.6.0'
 }
 
 wrapper {
@@ -13,7 +13,12 @@ repositories {
 }
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-    sourceCompatibility = JavaVersion.VERSION_14
-    targetCompatibility = JavaVersion.VERSION_14
-    kotlinOptions.jvmTarget = JavaVersion.VERSION_14
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+    kotlinOptions.jvmTarget = JavaVersion.VERSION_11
+}
+
+dependencies {
+    implementation 'org.jooq:joor:0.9.13'
+    runtimeOnly 'org.jetbrains.kotlin:kotlin-reflect'
 }
