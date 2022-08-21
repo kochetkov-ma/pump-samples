@@ -25,3 +25,10 @@ open class DockerComposeTest : StringSpec() {
         }
     }
 }
+
+
+fun main() {
+    "%-30s : %s".format("1", "abc").also(::println)
+    "%-30s : %s".format("1234567890", "abc").also(::println)
+    "%-30s : %s".format("12345678901234567890", "abc").also(::println)
+}
