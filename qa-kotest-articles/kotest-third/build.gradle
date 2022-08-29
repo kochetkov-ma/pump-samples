@@ -2,7 +2,7 @@ plugins {
     id 'idea'
     id 'org.jetbrains.kotlin.jvm' version '1.7.10'
     id 'org.jetbrains.kotlin.plugin.spring' version '1.7.10'
-    id 'org.springframework.boot' version '2.7.2' // https://docs.spring.io/spring-boot/docs/current/reference/html/dependency-versions.html
+    id 'org.springframework.boot' version '2.7.2'
     id "io.qameta.allure" version "2.10.0"
 }
 
@@ -53,15 +53,12 @@ test {
 
 allureReport {
     clean = true
-    verbose = true
 }
 
 allure {
     adapter {
-        allureJavaVersion = '2.18.1'
         autoconfigureListeners = false
         version = '2.18.1'
-        aspectjWeaver = false
         frameworks {
             junit5 {
                 enabled = false

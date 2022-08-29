@@ -20,6 +20,16 @@ Kotlin. Автоматизация тестирования (Часть 3). Ра
 - [Kotlin. Автоматизация тестирования (Часть 2). Kotest. Deep Diving](https://habr.com/ru/company/nspk/blog/542754/)
   <cut />
 
+## О себе
+Я являюсь **QA Лидом Автоматизации** на большом проекте в [Мир Plat.Form (НСПК)](https://habr.com/ru/company/nspk/). 
+Проект зародился 3 года назад и вырос до четырех команд, где трудится в общей сложности более 10 разработчиков в тестировании (**SDET**), без учета остальных участников в лице аналитиков, разработчиков и технологов.
+Наша задача — автоматизировать функциональные тесты на уровне отдельных сервисов, интеграций между ними и **E2E** до попадания функционала в **релиз** - всего порядка 40 микро-сервисов.
+От 1 до 5 микро-релизов в неделю.
+Взаимодействие между сервисами - `Kafka`, внешний API - REST, а также 3 фронтовых Web приложения.
+Разработка самой системы и тестов ведется на языке **Kotlin**, а движок для тестов был выбран **Kotest**.
+
+В данной статье и в остальных публикациях серии я максимально подробно рассказываю о тестовом Движке и вспомогательных технологиях в формате **Руководства/Tutorial**.
+
 ## Парадигма расширений
 
 Что такое расширение для фреймворка тестирования?
@@ -67,7 +77,7 @@ public @interface SpringBootTest {
 
 - На вход принимает неизменяемый объект, например `TestCase` или `TestResult`, возможно еще какой-то контекст.
 - Что-то делает и результат транслирует в сторонней сущности, например репорте.
-- Ничего не возвращает либо какой-то неизменяемый результат для журналирования.
+- Ничего не возвращает, либо отдает какой-то неизменяемый результат для журналирования.
 
 Например, недавно появившийся в `Kotest` интерфейс `InstantiationErrorListener` - он позволяет перехватить ошибку при создании сущности класса теста.  
 Он решает проблему, когда в результате неверного контекста или ошибок в инициализации класс с тестами просто не удалось создать.  
@@ -78,8 +88,8 @@ interface InstantiationErrorListener : Extension {
     suspend fun instantiationError(kclass: KClass<*>, t: Throwable)
 }
 ```
-
-[картинка про асинхронное выполнение всех расширений]()
+Все слушатели могут выполняться асинхронно, так как не влияют на жизненный цикл теста и друг друга и результат их выполнений собирается в коллекцию:
+![img_3.png](img_3.png)
 
 ### Interceptor
 
@@ -132,8 +142,8 @@ internal class Junit5Test {
 
 ## Немного встроенных расширений Kotest
 
-Вся документация по расширениям есть в документации в разделе [Extensions](https://kotest.io/docs/extensions/extensions.html).
-Но мы здесь собрались, чтобы попробовать самое интересное, а не парусить документацию.
+Вся документация по расширениям есть в разделе [Extensions](https://kotest.io/docs/extensions/extensions.html).
+Но мы здесь собрались, чтобы попробовать самое интересное, а не парсить документацию.
 
 > Однако документация у них супер классная! Есть вообще все!
 >
@@ -145,9 +155,9 @@ internal class Junit5Test {
 >
 > Все это заслуга разработчиков `Kotest` и Фреймворка `Docusaurus 2.0` - мой лайк [туда]()
 
-В `Kotest` есть набор встроенных расширений. Все они в пакете `io.kotest:kotest-extensions-jvm`,
-который транзитивно приходит вместе с основным артефактом `io.kotest:kotest-runner-junit5`.
-Все они находятся в пакете `io.kotest.extensions` - просто имейте это ввиду, там их много и я расскажу про несколько.
+В `Kotest` есть набор встроенных расширений. Все они в артефакте `io.kotest:kotest-extensions-jvm`,
+который транзитивно приходит вместе с основным `io.kotest:kotest-runner-junit5`.
+Находятся в пакете `io.kotest.extensions` - просто имейте это ввиду, там их много и я расскажу про несколько.
 
 #### Возьмем расширение `SystemEnvironmentTestListener`
 
@@ -591,7 +601,7 @@ internal class ValidationControllerJunitTest {
 - некорректно отображает вложенную структуру теста для `Data Driven` сценариев
 - не поддерживает все аннотации `Allure`
 
-Но есть решение, расширение! 
+Но есть решение! 
 Альтернативное расширение **[`ru.iopump.kotest:kotest-allure`](https://github.com/kochetkov-ma/kotest-allure)** - оно работает и все корректно отображает, а также отмечено звездочкой от создателя `Kotest`, поэтому можно доверять.
 
 Подключаем расширение в `Gradle`, а заодно и добавим и для `RestAssured`
@@ -615,17 +625,103 @@ object KotestProjectConfig : AbstractProjectConfig() {
 
 И набросаем минимальный набор аннотаций, который мы обязательно добавляем на каждый тест-класс в `Mir.Platform`
 ```kotlin
-@Epic("Habr")
-@Feature("Kotest")
-@Story("Validation")
-@Link(name = "Requirements", url = "https://habr.com/ru/company/nspk/blog/")
-@KJira("KT-1")
+@Epic("Habr") /* 1 */
+@Feature("Kotest") /* 2 */
+@Story("Validation") /* 3 */
+@Link(name = "Requirements", url = "https://habr.com/ru/company/nspk/blog/") /* 4 */
+@KJira("KT-1") /* 5 */
 @KDescription(
   """
 Kotest integration with Spring Boot.
 Also using Allure Listener for test reporting.
     """
-)
+) /* 6 */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 internal class ValidationControllerKotestTest
 ```
+- `1` Верхний уровень группировки тестов
+- `2` Группировка по функциональности
+- `3` Группировка по конкретной истории
+- `4` Ссылка на требования
+- `5` Ссылка на номер задачи
+- `6` Многострочное человеко читаемое описание, поясняющее особенности подхода в тесте / логику / проверки
+
+Чтобы ссылки на задачи корректно работали, необходимо оформить шаблоны для ссылок в `allure.properties` и положит в папку `resources/`.
+Вот пример, который будет подставлять вместо `{}` номер задачи и вести в `youtrack.jetbrains.com`:
+```properties
+allure.link.jira.pattern=https://youtrack.jetbrains.com/issue/{}
+```
+Сюда можно добавлять свои шаблоны, давать им имена и создавать собственные аннотации для определенного вида ссылок.
+
+Для добавления задач генерации отчета и включения перехвата Allure аннотаций через `AspectJ` желательно подключить Gradle-плагин:
+```groovy
+plugins {
+    id "io.qameta.allure" version "2.10.0"
+}
+```
+
+У нас используется несколько Фреймворков для тестирования, а также `Kotest` **пока** не поддерживается Allure плагином, то полностью автоматическая конфигурация нам не подойдет:
+```groovy
+allureReport {
+  clean = true /* 1 */
+}
+
+allure {
+  adapter {
+    autoconfigureListeners = false /* 2 */
+    version = '2.18.1' /* 3 */
+    frameworks {
+      junit5 {
+        enabled = false /* 4 */
+      }
+    }
+  }
+}
+```
+- `1` Для задачи `allureReport` включаем автоматическую очистку перед генерацией - иначе он выбрасывает исключение, если отчет уже сгенерирован
+- `2` Отключаем автоматическую конфигурацию расширений под Фреймворки
+- `3` Указываем версию библиотек Allure для генератора
+- `4` Отключаем расширение для `junit5` иначе будет дублирование записей, так как `Kotest` воспринимается плагином как `Junit5`
+
+Запускаем тесты и генерацию Allure-отчета:
+```
+gradle test allureReport
+```
+
+И остается разобрать сгенерированный Allure отчет, хотя там все довольно очевидно
+![img_2.png](img_2.png)
+
+Заключение
+------
+По традиции, ссылка на все примеры [qa-kotest-articles/kotest-third](https://github.com/kochetkov-ma/pump-samples/tree/master/qa-kotest-articles/kotest-third).
+
+Наконец-таки закончился цикл статей про `Kotest` - мы разобрали все основные аспекты данного фреймворка и было продемонстрировано успешное применение для тестирования `Spring` приложения на любом уровне.  
+
+С помощью системы расширений можно добавить любую, не упомянутую мной функциональность в `Kotest`:
+- управлять контейнерами с помощью `kotest-extensions-testcontainers`
+- контролировать **HTTP** заглушки в `kotest-extensions-wiremock`
+- работать с `Kafka` через `kotest-extensions-embedded-kafka`
+
+Ресурсы
+------
+[Блог Mir.Platform](https://habr.com/ru/company/nspk/blog/)
+
+[Kotlin. Автоматизация тестирования (часть 1). Kotest: Начало](https://habr.com/ru/post/520380/)
+
+[Kotlin. Автоматизация тестирования (Часть 2). Kotest. Deep Diving](https://habr.com/ru/company/nspk/blog/542754/)
+
+[Примеры кода](https://github.com/kochetkov-ma/pump-samples/tree/master/qa-kotest-articles/kotest-third/src)
+
+[Официальная документация Kotest](https://kotest.io/docs/quickstart)
+
+[Kotest GitHub](https://github.com/kotest/kotest)
+
+[Kotest Spring GitHub](https://github.com/kotest/kotest-extensions-spring)
+
+[Kotest Allure GitHub](https://github.com/kochetkov-ma/kotest-allure)
+
+[Kotlin Lang](https://kotlinlang.org/docs/home.html)
+
+[JUnit5](https://junit.org/junit5/docs/current/user-guide/)
+
+[Gradle Testing](https://docs.gradle.org/current/userguide/java_testing.html)
