@@ -113,6 +113,8 @@ interface InstantiationErrorListener : Extension {
 > Сразу отвечаю на вопрос: `Что будет если несколько таких расширений?`  
 > Будет использован результат первого добавленного в реестр, если оно вернет не `null`. Либо вызывается логика создания `Spec` по умолчанию.
 
+На самом деле внутри `Kotest` большая часть функционала также запускается по модели перехватчиков. 
+Специальным внутренним перехватчикам делегируется поиск и запуск пользовательских расширений:
 ![](https://habrastorage.org/webt/tt/pv/dk/ttpvdksb5cpvg7pbdqer7knuj2e.png)
 
 В ходе этого этапа создается [функция высшего порядка с помощью свертывания fold](https://en.wikipedia.org/wiki/Fold_(higher-order_function)), с порядком равным кол-ву перехватчиков.
@@ -162,7 +164,7 @@ internal class Junit5Test {
 > - подробный `Changelog`
 > - ссылки на статьи / `StackOverflow` / `GitHub` / стабильные и snapshot версии
 >
-> Все это заслуга разработчиков `Kotest` и Фреймворка `Docusaurus 2.0` - мой лайк [туда]()
+> Все это заслуга разработчиков `Kotest` и Фреймворка `Docusaurus 2.0` - мой лайк [Docusaurus 2.0](https://github.com/facebook/docusaurus)
 
 В `Kotest` есть набор встроенных расширений. Все они в артефакте `io.kotest:kotest-extensions-jvm`,
 который транзитивно приходит вместе с основным `io.kotest:kotest-runner-junit5`.
