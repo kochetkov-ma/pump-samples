@@ -1,6 +1,12 @@
 Kotest + Spring + Allure Reports
 =================================
 
+It is sub=project of [pump-samples](./../README.md) 
+
+All sub-projects define in [settings.gradle](./../settings.gradle)
+
+Base gradle settings get from [root build.gradle](./../build.gradle)
+
 Kotest + Spring + Allure Reports is extremely powerful approach to make pretty auto-tests in BDD style.
 You may get acquainted with the Kotest framework in detail by the [official documentation](https://github.com/kotest/kotest/blob/master/doc/reference.md).
 I want to pay you attention on using [Allure Report Listener](https://github.com/kochetkov-ma/kotest-allure).

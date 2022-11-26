@@ -6,6 +6,7 @@ plugins {
     id 'idea'
     // Very useful plugin. It checks all deps and plugins versions and show the latest if it exist. Task -> 'dependencyUpdates' ('help' group)
     id 'com.github.ben-manes.versions' version "$benManesPluginVersion"
+    // Kotlin
     id 'org.jetbrains.kotlin.jvm' version "$kotlinVersion" apply false
 }
 
@@ -40,12 +41,17 @@ idea { module { downloadJavadoc = true; downloadSources = false } }
 wrapper { distributionType = Wrapper.DistributionType.ALL; gradleVersion = gradleWrapperVersion }
 
 subprojects {
+
+    /** Apply kotlin for all projects */
     apply plugin: 'org.jetbrains.kotlin.jvm'
+
     /** According to Kotlin Documentation */
     tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
         kotlinOptions.jvmTarget = JavaVersion.VERSION_17
     }
+
+    /** Use Junit5 instead of 4 */
     test { useJUnitPlatform() }
 }
