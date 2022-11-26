@@ -2,6 +2,8 @@ package ru.iopump.kotest
 
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
+import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.Test
 import org.springframework.test.context.ContextConfiguration
 
 /**
@@ -32,4 +34,5 @@ open class ReportingFreeSpec(step: AllureStep) : FreeSpec() {
             }
         }
     }
+
 }
