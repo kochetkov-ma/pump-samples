@@ -1,9 +1,9 @@
 Kotest + Spring + Allure Reports
 =================================
 
-It is sub=project of [pump-samples](./../README.md) 
+It is subproject of [pump-samples](./../.) 
 
-All sub-projects define in [settings.gradle](./../settings.gradle)
+All subprojects define in [settings.gradle](./../settings.gradle)
 
 Base gradle settings get from [root build.gradle](./../build.gradle)
 
