@@ -17,4 +17,12 @@ dependencies {
 
     /** Logger implementation */
     testImplementation "org.slf4j:slf4j-simple:$slf4jVersion"
+
+    implementation 'org.json:json:20230227'
+    testImplementation 'org.assertj:assertj-core:3.24.2'
+    testImplementation 'net.javacrumbs.json-unit:json-unit-assertj:2.37.0'
+
+    testImplementation 'io.kotest:kotest-assertions-json-jvm:5.5.5'
+
+    testImplementation 'com.jayway.jsonpath:json-path-assert:2.6.0'
 }

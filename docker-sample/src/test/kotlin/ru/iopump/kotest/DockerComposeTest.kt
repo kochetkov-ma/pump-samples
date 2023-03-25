@@ -1,10 +1,8 @@
 package ru.iopump.kotest
 
+import com.codeborne.selenide.*
+import com.codeborne.selenide.CollectionCondition.size
 import com.codeborne.selenide.Condition.exist
-import com.codeborne.selenide.Configuration
-import com.codeborne.selenide.ElementsCollection
-import com.codeborne.selenide.Selenide
-import com.codeborne.selenide.SelenideElement
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.extensions.testcontainers.perSpec
 import org.openqa.selenium.support.FindBy
@@ -25,6 +23,7 @@ open class DockerComposeTest : FreeSpec() {
      */
     private val dockerComposeEnvironment: DockerComposeContainer<*> =
         DockerComposeContainer<Nothing>(dockerComposeFile).apply {
+            System.getenv().put("PATH", "путь до bin")
             withExposedService("browser", 4444, Wait.forListeningPort())
             withExposedService("testing-application", 80, Wait.forListeningPort())
             withLocalCompose(true)
@@ -60,7 +59,7 @@ open class DockerComposeTest : FreeSpec() {
             "Then docker logo exists and navigation items amount is 10" {
                 val page = Selenide.page(GettingStartedPage::class.java) // Create and init page object
                 page.dockerLogo.shouldBe(exist) // Check Docker Logo
-                page.leftNavigationLinks.shouldHaveSize(10) // Check Navigation Bar Elements
+                page.leftNavigationLinks.should(size(10)) // Check Navigation Bar Elements
 
                 val itemsText = page.leftNavigationLinks.texts().joinToString("\n")
                 println("\n\n\nNAVIGATION PANEL ITEMS: $itemsText \n\n\n")
